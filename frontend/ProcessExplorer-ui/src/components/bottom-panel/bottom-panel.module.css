@@ -1,0 +1,11 @@
+.bottomPanel {
+  height: 100%;
+  overflow: auto;
+  padding: 0 12px;
+  background: var(--ant-color-bg-container);
+  border-top: 1px solid var(--ant-color-border);
+}
+
+.empty {
+  margin-top: 16px;
+}

@@ -1,0 +1,12 @@
+.menuBar {
+  border-bottom: 1px solid var(--ant-color-border);
+  font-size: 13px;
+  line-height: 30px;
+}
+
+.menuBar :global(.ant-menu-item),
+.menuBar :global(.ant-menu-submenu-title) {
+  height: 30px;
+  line-height: 30px;
+  padding-inline: 12px;
+}

@@ -1,0 +1,20 @@
+.processTable {
+  height: 100%;
+  overflow: auto;
+  background: var(--ant-color-bg-container);
+}
+
+.mono {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 12px;
+}
+
+.cpuTag {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  min-width: 52px;
+  text-align: center;
+}
+
+.selectedRow td {
+  background: color-mix(in srgb, var(--ant-color-primary) 16%, transparent) !important;
+}

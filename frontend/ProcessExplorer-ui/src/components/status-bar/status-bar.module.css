@@ -1,0 +1,25 @@
+.statusBar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 24px;
+  padding: 0 12px;
+  background: var(--ant-color-bg-elevated);
+  border-top: 1px solid var(--ant-color-border);
+  font-size: 11px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.label {
+  color: var(--ant-color-text-secondary);
+}
+
+.value {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  color: var(--ant-color-text);
+}

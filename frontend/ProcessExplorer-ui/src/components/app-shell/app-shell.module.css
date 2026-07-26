@@ -1,0 +1,16 @@
+.appShell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--ant-color-bg-base);
+  color: var(--ant-color-text);
+}
+
+.verticalSplitter {
+  flex: 1;
+  min-height: 0;
+}
+
+.horizontalSplitter {
+  height: 100%;
+}

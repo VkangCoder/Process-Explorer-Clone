@@ -1,0 +1,45 @@
+.overviewBar {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-border);
+  padding: 6px 8px;
+  overflow-x: auto;
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border-right: 1px solid var(--ant-color-border);
+  white-space: nowrap;
+}
+
+.tile:last-child {
+  border-right: none;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+}
+
+.textGroup {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.label {
+  font-size: 11px;
+  color: var(--ant-color-text-secondary);
+}
+
+.value {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ant-color-text);
+}

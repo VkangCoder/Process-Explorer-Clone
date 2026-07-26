@@ -1,0 +1,11 @@
+.propertiesPanel {
+  height: 100%;
+  overflow: auto;
+  padding: 8px 12px;
+  background: var(--ant-color-bg-container);
+  border-left: 1px solid var(--ant-color-border);
+}
+
+.empty {
+  margin-top: 32px;
+}
