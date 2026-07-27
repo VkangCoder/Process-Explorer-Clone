@@ -32,12 +32,24 @@ public class ProcessMonitorService : BackgroundService
             foreach (var p in Process.GetProcesses())
             {
                 int pid = p.Id;
-                int parentPid = parentMap.TryGetValue(pid, out int pp) ? pp : -1;
+
+                int parentPid = -1;
+                int threadCount = 0;
+                if (parentMap.TryGetValue(pid, out var info))
+                {
+                    parentPid = info.parent;
+                    threadCount = info.threads;
+                }
 
                 double cpuPercent = 0;
                 long cpuNow = -1;
+                int handleCount = 0;
 
                 try { cpuNow = p.TotalProcessorTime.Ticks; }
+                catch (Win32Exception) { }
+                catch (InvalidOperationException) { p.Dispose(); continue; }
+
+                try { handleCount = p.HandleCount; }
                 catch (Win32Exception) { }
                 catch (InvalidOperationException) { p.Dispose(); continue; }
 
@@ -48,16 +60,11 @@ public class ProcessMonitorService : BackgroundService
                         cpuPercent = (double)(cpuNow - cpuPrev) / (wallDelta * _coreCount) * 100;
                 }
 
-                list.Add(new ProcInfo(pid, parentPid, p.ProcessName, cpuPercent, p.WorkingSet64 / 1_048_576));
+                list.Add(new ProcInfo(pid, parentPid, p.ProcessName, cpuPercent, p.WorkingSet64 / 1_048_576, threadCount, handleCount));
                 p.Dispose();
             }
 
-            var maxCpu = list.Count > 0 ? list.Max(x => x.Cpu) : 0;
-            Console.WriteLine($"wallDelta={wallDelta}  prevCount={_previousCpu.Count}  maxCpu={maxCpu:F2}");
-
             await _hub.Clients.All.SendAsync("snapshot", list, stoppingToken);
-
-            // Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Scanned {list.Count} process");
 
             _previousCpu.Clear();
             foreach (var kv in currentCpu) _previousCpu[kv.Key] = kv.Value;
@@ -70,4 +77,4 @@ public class ProcessMonitorService : BackgroundService
     }
 }
 
-record ProcInfo(int Pid, int ParentPid, string Name, double Cpu, long MemMb);
+record ProcInfo(int Pid, int ParentPid, string Name, double Cpu, long MemMb, int ThreadCount, int HandleCount);

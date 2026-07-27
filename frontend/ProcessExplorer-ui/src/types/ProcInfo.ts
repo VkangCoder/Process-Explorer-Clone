@@ -4,4 +4,6 @@ export interface ProcInfo {
   name: string;
   cpu: number;
   memMb: number;
+  threadCount: number;
+  handleCount: number;
 }

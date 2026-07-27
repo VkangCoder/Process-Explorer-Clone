@@ -31,7 +31,7 @@ const StatTile = ({ icon, label, value, color }: StatTileProps) => (
   </div>
 );
 
-export const OverviewBar = ({ processCount, cpu }: OverviewBarProps) => {
+export const OverviewBar = ({ processCount, cpu, memory, handles, thread }: OverviewBarProps) => {
   return (
     <div className={styles.overviewBar}>
       <StatTile
@@ -43,7 +43,7 @@ export const OverviewBar = ({ processCount, cpu }: OverviewBarProps) => {
       <StatTile
         icon={<MemoryStick size={16} />}
         label="Memory"
-        value="—"
+        value={`${(memory / 1024).toFixed(1)} GB`}
         color={chartTokens.memory}
       />
       <StatTile
@@ -73,13 +73,13 @@ export const OverviewBar = ({ processCount, cpu }: OverviewBarProps) => {
       <StatTile
         icon={<Link2 size={16} />}
         label="Handles"
-        value="—"
+        value={handles.toLocaleString()}
         color="var(--ant-color-text-secondary)"
       />
       <StatTile
         icon={<Layers size={16} />}
         label="Threads"
-        value="—"
+        value={thread.toLocaleString()}
         color="var(--ant-color-text-secondary)"
       />
     </div>

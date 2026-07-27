@@ -20,12 +20,23 @@ function App() {
     [processes],
   );
 
+  const totalMemory = useMemo(
+    () => processes.reduce((sum, p) => sum + p.memMb, 0),
+    [processes],
+  );
+
+  const totalThreads = useMemo(() => processes.reduce((s, p) => s + p.threadCount, 0), [processes]);
+  const totalHandles = useMemo(() => processes.reduce((s, p) => s + p.handleCount, 0), [processes]);
+
   return (
     <ConfigProvider theme={mode === "dark" ? darkTheme : lightTheme}>
       <AppShell
         processes={processes}
         totalCpu={totalCpu}
         selectedPid={selectedPid}
+        totalMemory={totalMemory}
+        totalThreads={totalThreads}
+        totalHandles={totalHandles}
         selectedProcess={selectedProcess}
         themeMode={mode}
         onToggleTheme={toggleTheme}
