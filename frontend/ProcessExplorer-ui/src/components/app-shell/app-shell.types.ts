@@ -7,6 +7,7 @@ export interface AppShellProps {
   totalMemory: number;
   totalHandles: number;
   totalThreads: number;
+  totalDisk: number;
   selectedPid: number | undefined;
   selectedProcess: ProcInfo | undefined;
   themeMode: ThemeMode;

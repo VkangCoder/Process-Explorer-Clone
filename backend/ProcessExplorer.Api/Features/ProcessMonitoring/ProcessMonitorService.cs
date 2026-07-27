@@ -4,37 +4,34 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR;
 using ProcessExplorer.Api.Interop;
-
 public class ProcessMonitorService : BackgroundService
 {
     private readonly Dictionary<int, long> _previousCpu = new();
+    private readonly Dictionary<int, long> _previousIo = new();
     private readonly int _coreCount = Environment.ProcessorCount;
     private long _previousTimestamp = Stopwatch.GetTimestamp();
-
     private readonly IHubContext<ProcessHub> _hub;
-
     public ProcessMonitorService(IHubContext<ProcessHub> hub)
     {
         _hub = hub;
     }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             long now = Stopwatch.GetTimestamp();
             long wallDelta = Stopwatch.GetElapsedTime(_previousTimestamp, now).Ticks;
-
             var currentCpu = new Dictionary<int, long>();
             var parentMap = ProcessTreeNative.GetParentMap();
             var list = new List<ProcInfo>();
+            var currentIo = new Dictionary<int, long>();
 
             foreach (var p in Process.GetProcesses())
             {
                 int pid = p.Id;
-
                 int parentPid = -1;
                 int threadCount = 0;
+
                 if (parentMap.TryGetValue(pid, out var info))
                 {
                     parentPid = info.parent;
@@ -45,12 +42,13 @@ public class ProcessMonitorService : BackgroundService
                 long cpuNow = -1;
                 int handleCount = 0;
 
-                try { cpuNow = p.TotalProcessorTime.Ticks; }
+                try
+                {
+                    cpuNow = p.TotalProcessorTime.Ticks;
+                    handleCount = p.HandleCount;
+                }
                 catch (Win32Exception) { }
-                catch (InvalidOperationException) { p.Dispose(); continue; }
 
-                try { handleCount = p.HandleCount; }
-                catch (Win32Exception) { }
                 catch (InvalidOperationException) { p.Dispose(); continue; }
 
                 if (cpuNow >= 0)
@@ -60,7 +58,22 @@ public class ProcessMonitorService : BackgroundService
                         cpuPercent = (double)(cpuNow - cpuPrev) / (wallDelta * _coreCount) * 100;
                 }
 
-                list.Add(new ProcInfo(pid, parentPid, p.ProcessName, cpuPercent, p.WorkingSet64 / 1_048_576, threadCount, handleCount));
+                double diskKbPerSec = 0;
+                long ioNow = ProcessIoNative.GetTotalIoBytes(pid);
+
+                if (ioNow >= 0)
+                {
+                    currentIo[pid] = ioNow;
+
+                    if (wallDelta > 0 && _previousIo.TryGetValue(pid, out long ioPrev))
+                    {
+                        double elapsedSeconds = wallDelta / 10_000_000.0;
+                        double deltaKb = (ioNow - ioPrev) / 1024.0;
+                        diskKbPerSec = deltaKb / elapsedSeconds;
+                    }
+                }
+
+                list.Add(new ProcInfo(pid, parentPid, p.ProcessName, cpuPercent, p.WorkingSet64 / 1_048_576, threadCount, handleCount, diskKbPerSec));
                 p.Dispose();
             }
 
@@ -68,13 +81,13 @@ public class ProcessMonitorService : BackgroundService
 
             _previousCpu.Clear();
             foreach (var kv in currentCpu) _previousCpu[kv.Key] = kv.Value;
+
+            _previousIo.Clear();
+            foreach (var kv in currentIo) _previousIo[kv.Key] = kv.Value;
+
             _previousTimestamp = now;
-
-
 
             await Task.Delay(1000, stoppingToken);
         }
     }
 }
-
-record ProcInfo(int Pid, int ParentPid, string Name, double Cpu, long MemMb, int ThreadCount, int HandleCount);

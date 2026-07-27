@@ -13,4 +13,10 @@ export const darkTheme: ThemeConfig = {
     borderRadius: 8,
     fontFamily: "'Inter', 'Segoe UI', sans-serif",
   },
+  components: {
+    Table: {
+      headerBorderRadius: 0,
+      borderRadiusLG: 0,
+    },
+  },
 };

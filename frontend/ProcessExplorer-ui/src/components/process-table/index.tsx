@@ -1,9 +1,10 @@
+import { Table, Typography, type TableColumnsType } from "antd";
 import { useMemo, useState } from "react";
-import { Table, Tag, type TableColumnsType } from "antd";
-import type { ProcessTableProps, ProcessTreeNode } from "./process-table.types";
-import { buildTree } from "./process-table.tree";
 import { getCpuColor } from "./process-table.helpers";
 import styles from "./process-table.module.css";
+import { buildTree } from "./process-table.tree";
+import type { ProcessTableProps, ProcessTreeNode } from "./process-table.types";
+const { Text } = Typography;
 
 const columns: TableColumnsType<ProcessTreeNode> = [
   {
@@ -30,9 +31,9 @@ const columns: TableColumnsType<ProcessTreeNode> = [
     align: "right",
     sorter: (a, b) => a.cpu - b.cpu,
     render: (cpu: number) => (
-      <Tag color={getCpuColor(cpu)} className={styles.cpuTag}>
+      <Text style={{ color: getCpuColor(cpu) }} className={styles.cpuTag}>
         {cpu.toFixed(1)}%
-      </Tag>
+      </Text>
     ),
   },
   {

@@ -25,8 +25,20 @@ function App() {
     [processes],
   );
 
-  const totalThreads = useMemo(() => processes.reduce((s, p) => s + p.threadCount, 0), [processes]);
-  const totalHandles = useMemo(() => processes.reduce((s, p) => s + p.handleCount, 0), [processes]);
+  const totalThreads = useMemo(
+    () => processes.reduce((s, p) => s + p.threadCount, 0),
+    [processes],
+  );
+
+  const totalHandles = useMemo(
+    () => processes.reduce((s, p) => s + p.handleCount, 0),
+    [processes],
+  );
+
+  const totalDisk = useMemo(
+    () => processes.reduce((s, p) => s + p.diskKbPerSec, 0),
+    [processes],
+  );
 
   return (
     <ConfigProvider theme={mode === "dark" ? darkTheme : lightTheme}>
@@ -35,6 +47,7 @@ function App() {
         totalCpu={totalCpu}
         selectedPid={selectedPid}
         totalMemory={totalMemory}
+        totalDisk={totalDisk}
         totalThreads={totalThreads}
         totalHandles={totalHandles}
         selectedProcess={selectedProcess}

@@ -18,7 +18,7 @@ const items: TabsProps["items"] = tabKeys.map((label) => ({
   children: (
     <Empty
       image={Empty.PRESENTED_IMAGE_SIMPLE}
-      description={`${label} — chưa có dữ liệu`}
+      description={`${label} — No data yet`}
       className={styles.empty}
     />
   ),

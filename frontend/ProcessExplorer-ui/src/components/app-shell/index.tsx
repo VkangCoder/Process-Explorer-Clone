@@ -13,6 +13,7 @@ export const AppShell = ({
   processes,
   totalCpu,
   totalMemory,
+  totalDisk,
   totalThreads,
   totalHandles,
   selectedPid,
@@ -37,7 +38,14 @@ export const AppShell = ({
     <div className={styles.appShell} style={cssVars}>
       <MenuBar />
       <Toolbar themeMode={themeMode} onToggleTheme={onToggleTheme} />
-      <OverviewBar processCount={processes.length} cpu={totalCpu} memory={totalMemory} thread={totalThreads} handles={totalHandles} />
+      <OverviewBar
+        processCount={processes.length}
+        cpu={totalCpu}
+        memory={totalMemory}
+        thread={totalThreads}
+        handles={totalHandles}
+        disk={totalDisk}
+      />
 
       <Splitter orientation="vertical" className={styles.verticalSplitter}>
         <Splitter.Panel defaultSize="75%" min="30%">

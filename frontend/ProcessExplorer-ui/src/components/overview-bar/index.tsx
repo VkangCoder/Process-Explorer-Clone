@@ -1,11 +1,11 @@
 import {
   Cpu,
-  Gauge,
+  // Gauge, // There is no API for the GPU yet.
   HardDrive,
   Layers,
   Link2,
   MemoryStick,
-  Network,
+  // Network, // There is no API for the Network yet.
   Workflow,
 } from "lucide-react";
 import { chartTokens } from "../../theme";
@@ -31,7 +31,20 @@ const StatTile = ({ icon, label, value, color }: StatTileProps) => (
   </div>
 );
 
-export const OverviewBar = ({ processCount, cpu, memory, handles, thread }: OverviewBarProps) => {
+export const OverviewBar = ({
+  processCount,
+  cpu,
+  memory,
+  handles,
+  thread,
+  disk,
+}: OverviewBarProps) => {
+  const formatDisk = (kbPerSec: number): string => {
+    if (kbPerSec < 1) return "0 KB/s";
+    if (kbPerSec < 1024) return `${kbPerSec.toFixed(0)} KB/s`;
+    return `${(kbPerSec / 1024).toFixed(1)} MB/s`;
+  };
+
   return (
     <div className={styles.overviewBar}>
       <StatTile
@@ -49,21 +62,25 @@ export const OverviewBar = ({ processCount, cpu, memory, handles, thread }: Over
       <StatTile
         icon={<HardDrive size={16} />}
         label="Disk"
-        value="—"
+        value={formatDisk(disk)}
         color={chartTokens.disk}
       />
+      {/* There is no API for the GPU yet.
       <StatTile
         icon={<Gauge size={16} />}
         label="GPU"
         value="—"
         color={chartTokens.gpu}
       />
+      */}
+      {/* There is no API for the Network yet.
       <StatTile
         icon={<Network size={16} />}
         label="Network"
         value="—"
         color={chartTokens.network}
       />
+      */}
       <StatTile
         icon={<Workflow size={16} />}
         label="Processes"
