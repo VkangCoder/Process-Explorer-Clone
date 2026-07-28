@@ -23,22 +23,40 @@ interface ToolButtonProps {
   icon: React.ReactNode;
   onClick?: () => void;
   active?: boolean;
+  disabled?: boolean;
 }
 
-const ToolButton = ({ label, icon, onClick, active }: ToolButtonProps) => (
+const ToolButton = ({ label, icon, onClick, active, disabled }: ToolButtonProps) => (
   <Tooltip title={label}>
-    <Button type={active ? "primary" : "text"} icon={icon} onClick={onClick} />
+    <Button
+      type={active ? "primary" : "text"}
+      icon={icon}
+      onClick={onClick}
+      disabled={disabled}
+    />
   </Tooltip>
 );
 
-export const Toolbar = ({ themeMode, onToggleTheme }: ToolbarProps) => {
+export const Toolbar = ({
+  themeMode,
+  onToggleTheme,
+  selectedCount,
+  onKillSelected,
+}: ToolbarProps) => {
   return (
     <div className={styles.toolbar}>
       <Space size={4}>
         <ToolButton label="Refresh" icon={<RefreshCw size={16} />} />
         <ToolButton label="Pause" icon={<Pause size={16} />} />
         <Divider vertical />
-        <ToolButton label="Kill Process" icon={<OctagonX size={16} />} />
+        <ToolButton
+          label={
+            selectedCount > 0 ? `Kill Process (${selectedCount})` : "Kill Process"
+          }
+          icon={<OctagonX size={16} />}
+          disabled={selectedCount === 0}
+          onClick={onKillSelected}
+        />
         <ToolButton label="Kill Process Tree" icon={<ListTree size={16} />} />
         <Divider vertical />
         <ToolButton label="Find" icon={<Search size={16} />} />

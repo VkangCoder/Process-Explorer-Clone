@@ -6,13 +6,12 @@ import {
   type MenuProps,
   type TableColumnsType,
 } from "antd";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { OctagonX } from "lucide-react";
 import { getCpuColor } from "./process-table.helpers";
 import styles from "./process-table.module.css";
 import { buildTree } from "./process-table.tree";
 import type { ProcessTableProps, ProcessTreeNode } from "./process-table.types";
-import { killProcess } from "../../api/killProcess";
 
 const { Text } = Typography;
 
@@ -72,44 +71,16 @@ export const ProcessTable = ({
   processes,
   selectedPid,
   onSelectPid,
+  selectedRowKeys,
+  onSelectedRowKeysChange,
+  killProcesses,
+  pendingPids,
 }: ProcessTableProps) => {
   const treeData = useMemo(() => buildTree(processes), [processes]);
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const [contextRecord, setContextRecord] = useState<ProcessTreeNode | null>(
     null,
   );
-
-  const [pendingPid, setPendingPid] = useState<number | null>(null);
-
-  const handleKill = useCallback(
-    async (record: ProcessTreeNode) => {
-      if (pendingPid !== null) return;
-      if (record.startTimeUnixMs === 0) {
-        message.warning("Can not kill system process");
-        return;
-      }
-      setPendingPid(record.pid);
-      const hide = message.loading(`Killing ${record.name} (${record.pid})…`, 0);
-
-      const result = await killProcess(record.pid, record.startTimeUnixMs);
-
-      hide();
-      setPendingPid(null);
-
-      if (result.ok) {
-        message.success(`Killed ${record.name} (${record.pid})`);
-        return;
-      }
-
-      if (result.status === 404) {
-        message.info(`Process ${record.pid} not found`);
-        return;
-      }
-      message.error(result.message);
-    },
-    [message, pendingPid],
-  );
-
 
   const menu: MenuProps = useMemo(
     () => ({
@@ -120,7 +91,13 @@ export const ProcessTable = ({
 
         switch (action) {
           case "kill":
-            void handleKill(contextRecord);
+            void killProcesses([
+              {
+                pid: contextRecord.pid,
+                startTimeUnixMs: contextRecord.startTimeUnixMs,
+                name: contextRecord.name,
+              },
+            ]);
             break;
           case "killTree":
           case "restart":
@@ -132,7 +109,7 @@ export const ProcessTable = ({
         setContextRecord(null);
       },
     }),
-    [contextRecord],
+    [contextRecord, killProcesses],
   );
 
   return (
@@ -149,6 +126,14 @@ export const ProcessTable = ({
             expandable={{
               expandedRowKeys: expandedKeys,
               onExpandedRowsChange: (keys) => setExpandedKeys([...keys]),
+            }}
+            rowSelection={{
+              selectedRowKeys,
+              onChange: (keys) => onSelectedRowKeysChange(keys as number[]),
+              getCheckboxProps: (record) => ({
+                disabled:
+                  record.startTimeUnixMs === 0 || pendingPids.has(record.pid),
+              }),
             }}
             rowClassName={(record) =>
               record.pid === selectedPid ? styles.selectedRow : ""

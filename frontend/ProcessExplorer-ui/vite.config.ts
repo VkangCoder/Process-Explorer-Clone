@@ -8,4 +8,8 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] })
   ],
+  server: {
+    port: 3000,
+    strictPort: true, // Optional: Nếu port 3000 bị chiếm, Vite sẽ báo lỗi thay vì tự động đổi sang port khác (ví dụ: 3001)
+  }
 })
