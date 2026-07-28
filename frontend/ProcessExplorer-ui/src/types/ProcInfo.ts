@@ -6,5 +6,6 @@ export interface ProcInfo {
   memMb: number;
   threadCount: number;
   handleCount: number;
-  diskKbPerSec: number;
+  diskKbPerSec: number
+  startTimeUnixMs: number
 }

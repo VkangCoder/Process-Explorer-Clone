@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, App as AntdApp, } from "antd";
 import { AppShell } from "./components";
 import { useProcessData } from "./hooks/use-process-data";
 import { useTheme } from "./hooks/use-theme";
@@ -25,36 +25,29 @@ function App() {
     [processes],
   );
 
-  const totalThreads = useMemo(
-    () => processes.reduce((s, p) => s + p.threadCount, 0),
-    [processes],
-  );
+  const totalThreads = useMemo(() => processes.reduce((s, p) => s + p.threadCount, 0), [processes]);
 
-  const totalHandles = useMemo(
-    () => processes.reduce((s, p) => s + p.handleCount, 0),
-    [processes],
-  );
+  const totalHandles = useMemo(() => processes.reduce((s, p) => s + p.handleCount, 0), [processes]);
 
-  const totalDisk = useMemo(
-    () => processes.reduce((s, p) => s + p.diskKbPerSec, 0),
-    [processes],
-  );
+  const totalDisk = useMemo(() => processes.reduce((s, p) => s + p.diskKbPerSec, 0), [processes]);
 
   return (
     <ConfigProvider theme={mode === "dark" ? darkTheme : lightTheme}>
-      <AppShell
-        processes={processes}
-        totalCpu={totalCpu}
-        selectedPid={selectedPid}
-        totalMemory={totalMemory}
-        totalDisk={totalDisk}
-        totalThreads={totalThreads}
-        totalHandles={totalHandles}
-        selectedProcess={selectedProcess}
-        themeMode={mode}
-        onToggleTheme={toggleTheme}
-        onSelectPid={setSelectedPid}
-      />
+      <AntdApp>
+        <AppShell
+          processes={processes}
+          totalCpu={totalCpu}
+          selectedPid={selectedPid}
+          totalMemory={totalMemory}
+          totalThreads={totalThreads}
+          totalHandles={totalHandles}
+          totalDisk={totalDisk}
+          selectedProcess={selectedProcess}
+          themeMode={mode}
+          onToggleTheme={toggleTheme}
+          onSelectPid={setSelectedPid}
+        />
+      </AntdApp>
     </ConfigProvider>
   );
 }
