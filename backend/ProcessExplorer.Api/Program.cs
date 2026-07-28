@@ -1,7 +1,17 @@
 using Microsoft.OpenApi;
+using MongoDB.Driver;
 using ProcessExplorer.Api.Features.ProcessMonitoring;
+using ProcessExplorer.Api.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<MongoOptions>(builder.Configuration.GetSection("Mongo"));
+
+builder.Services.AddSingleton<IMongoClient>(sp =>
+{
+    var connectionString = builder.Configuration["Mongo:ConnectionString"];
+    return new MongoClient(connectionString);
+});
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -33,6 +43,20 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var client = scope.ServiceProvider.GetRequiredService<IMongoClient>();
+    try
+    {
+        var dbs = client.ListDatabaseNames().ToList();
+        Console.WriteLine($"[Mongo] Kết nối OK. Databases: {string.Join(", ", dbs)}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[Mongo] KẾT NỐI THẤT BẠI: {ex.Message}");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
