@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR;
 using ProcessExplorer.Api.Interop;
+using ProcessExplorer.Api.Persistence;
 
 public class ProcessMonitorService : BackgroundService
 {
@@ -11,12 +12,13 @@ public class ProcessMonitorService : BackgroundService
     private readonly Dictionary<int, long> _previousIo = new();
     private readonly int _coreCount = Environment.ProcessorCount;
     private long _previousTimestamp = Stopwatch.GetTimestamp();
-
+    private int _tickCount;
     private readonly IHubContext<ProcessHub> _hub;
-
-    public ProcessMonitorService(IHubContext<ProcessHub> hub)
+    private readonly ProcessSampleRepository _repository;
+    public ProcessMonitorService(IHubContext<ProcessHub> hub, ProcessSampleRepository repository)
     {
         _hub = hub;
+        _repository = repository;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -92,7 +94,7 @@ public class ProcessMonitorService : BackgroundService
                     name = p.ProcessName;
                     memMb = p.WorkingSet64 / 1_048_576;
                 }
-                catch (InvalidOperationException) { p.Dispose(); continue; }  
+                catch (InvalidOperationException) { p.Dispose(); continue; }
                 catch (Win32Exception) { name = $"pid_{pid}"; }
 
                 list.Add(new ProcInfo(pid, parentPid, name, cpuPercent, memMb,
@@ -101,6 +103,22 @@ public class ProcessMonitorService : BackgroundService
             }
 
             await _hub.Clients.All.SendAsync("snapshot", list, stoppingToken);
+
+            _tickCount++;
+
+            if (_tickCount % 5 == 0)
+            {
+                var samples = list.Select(p => new ProcessSample
+                {
+                    Timestamp = DateTime.UtcNow,
+                    Meta = new SampleMeta { Pid = p.Pid, Name = p.Name },
+                    Cpu = p.Cpu,
+                    MemMb = p.MemMb,
+                    HandleCount = p.HandleCount,
+                }).ToList();
+
+                _ = _repository.InsertManyAsync(samples, stoppingToken);
+            }
 
             _previousCpu.Clear();
             foreach (var kv in currentCpu) _previousCpu[kv.Key] = kv.Value;

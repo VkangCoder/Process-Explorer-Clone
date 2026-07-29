@@ -28,6 +28,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHostedService<ProcessMonitorService>();
+builder.Services.AddSingleton<ProcessSampleRepository>();
 
 // Add services to the container.
 builder.Services.AddControllers();

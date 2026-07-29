@@ -1,11 +1,12 @@
 import { Descriptions, Empty, Tabs, type TabsProps } from "antd";
 import type { PropertiesPanelProps } from "./properties-panel.types";
 import styles from "./properties-panel.module.css";
+import { PerformanceTab } from "../performance-tab/PerformanceTab";
 
 const NotAvailable = () => (
   <Empty
     image={Empty.PRESENTED_IMAGE_SIMPLE}
-    description="No data yet — cần backend gửi thêm thông tin"
+    description="No data yet"
     className={styles.empty}
   />
 );
@@ -48,7 +49,7 @@ export const PropertiesPanel = ({ process }: PropertiesPanelProps) => {
         />
       ),
     },
-    { key: "performance", label: "Performance", children: <NotAvailable /> },
+    { key: "performance", label: "Performance", children: <PerformanceTab pid={process?.pid} name={process?.name} /> },
     { key: "services", label: "Services", children: <NotAvailable /> },
     { key: "modules", label: "Modules", children: <NotAvailable /> },
   ];
