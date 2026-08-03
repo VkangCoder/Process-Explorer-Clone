@@ -44,12 +44,12 @@ export const PropertiesPanel = ({ process }: PropertiesPanelProps) => {
       ) : (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="Chọn một tiến trình để xem chi tiết"
+          description="Select a process to view details."
           className={styles.empty}
         />
       ),
     },
-    { key: "performance", label: "Performance", children: <PerformanceTab pid={process?.pid} name={process?.name} /> },
+    { key: "performance", label: "Performance", children: <PerformanceTab process={process} key={process?.pid} /> },
     { key: "services", label: "Services", children: <NotAvailable /> },
     { key: "modules", label: "Modules", children: <NotAvailable /> },
   ];

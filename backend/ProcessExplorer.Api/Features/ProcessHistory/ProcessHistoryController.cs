@@ -15,13 +15,13 @@ public class ProcessHistoryController : ControllerBase
     }
 
     // GET /api/processes/1080/history?minutes=5
-    [HttpGet("{pid:int}/history")]
+     [HttpGet("{pid:int}/history")]
     public async Task<IActionResult> GetHistory(
         int pid,
-        [FromQuery] int minutes = 5,
+        [FromQuery] int seconds = 60,
         CancellationToken ct = default)
     {
-        var samples = await _repository.GetHistoryAsync(pid, minutes, ct);
+        var samples = await _repository.GetHistoryAsync(pid, seconds, ct);
 
         var points = samples.Select(s => new
         {

@@ -35,9 +35,9 @@ public sealed class ProcessSampleRepository
     }
 
     public async Task<List<ProcessSample>> GetHistoryAsync(
-    int pid, int minutes, CancellationToken ct)
+    int pid, int seconds, CancellationToken ct)
     {
-        DateTime since = DateTime.UtcNow.AddMinutes(-minutes);
+        DateTime since = DateTime.UtcNow.AddSeconds(-seconds);
 
         var filter = Builders<ProcessSample>.Filter.And(
             Builders<ProcessSample>.Filter.Eq(s => s.Meta.Pid, pid),

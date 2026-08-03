@@ -1,60 +1,84 @@
 import { useEffect, useState } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { getProcessHistory, type HistoryPoint } from "../../api/getProcessHistory";
+import {
+    LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} from "recharts";
+import type { ProcInfo } from "../../types/ProcInfo";
+import { useTheme } from "../../hooks/use-theme";
 
 interface Props {
-    pid: number | undefined;
-    name: string | undefined;
+    process: ProcInfo | undefined;
 }
 
-export const PerformanceTab = ({ pid, name }: Props) => {
-    const [data, setData] = useState<HistoryPoint[]>([]);
+interface ChartPoint {
+    time: string;
+    cpu: number;
+}
+
+const MAX_POINTS = 60;
+
+export function PerformanceTab({ process }: Props) {
+    const { mode } = useTheme()
+    const [points, setPoints] = useState<ChartPoint[]>([]);
+    const pid = process?.pid;
+    useEffect(() => {
+        setPoints([]);
+    }, [pid]);
 
     useEffect(() => {
-        if (pid === undefined) {
-            setData([]);
+        if (!process) {
+            setPoints([]);
             return;
         }
 
-        const controller = new AbortController();
+        setPoints((prev) => {
+            const next = [
+                ...prev,
+                { time: new Date().toLocaleTimeString(), cpu: process.cpu },
+            ];
+            return next.slice(-MAX_POINTS);
+        });
+    }, [process]);
 
-        const fetchHistory = () => {
-            getProcessHistory(pid, 5, controller.signal)
-                .then(setData)
-                .catch(() => { });
-        };
-
-        fetchHistory();
-
-        const intervalId = setInterval(fetchHistory, 3000);
-
-        return () => {
-            controller.abort();
-            clearInterval(intervalId);
-        };
-    }, [pid]);
-
-    if (pid === undefined) {
+    if (!process) {
         return <div style={{ padding: 16 }}>Select a process to view its history.</div>;
     }
 
     return (
         <div style={{ padding: 8 }}>
-            <div style={{ marginBottom: 8 }}>{name} (PID {pid}) — CPU over the last 5 minutes</div>
+            <h4>{process.name} (PID {process.pid}) — CPU realtime</h4>
             <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={data}>
+                <LineChart data={points}>
+                    <CartesianGrid
+                        strokeDasharray="3 3"
+                        stroke={mode === "dark" ? "#444" : "#ccc"}
+                    />
                     <XAxis
-                        dataKey="timestamp"
-                        tickFormatter={(t) => (t ? new Date(t).toLocaleTimeString() : "")}
-                        tick={{ fontSize: 11 }}
+                        dataKey="time"
+                        tick={{ fontSize: 10, fill: mode === "dark" ? "#fff" : "#000" }}
+                        stroke={mode === "dark" ? "#666" : "#ccc"}
                     />
-                    <YAxis tick={{ fontSize: 11 }} />
+                    <YAxis
+                        domain={[0, "auto"]}
+                        tick={{ fontSize: 10, fill: mode === "dark" ? "#fff" : "#000" }}
+                        stroke={mode === "dark" ? "#666" : "#ccc"}
+                    />
                     <Tooltip
-                        labelFormatter={(t: any) => (t ? new Date(t).toLocaleTimeString() : "")}
+                        cursor={{ stroke: mode === "dark" ? "#666" : "#ccc" }}
+                        contentStyle={{
+                            backgroundColor: mode === "dark" ? "#1f1f1f" : "#fff",
+                            borderColor: mode === "dark" ? "#333" : "#ccc",
+                            color: mode === "dark" ? "#fff" : "#000",
+                        }}
                     />
-                    <Line type="monotone" dataKey="cpu" stroke="#4ec94e" dot={false} isAnimationActive={false} />
+                    <Line
+                        type="bump"
+                        dataKey="cpu"
+                        stroke={mode === "dark" ? "#4ec94e" : "#000"}
+                        dot={false}
+                        isAnimationActive={false}
+                    />
                 </LineChart>
             </ResponsiveContainer>
         </div>
     );
-};
+}
