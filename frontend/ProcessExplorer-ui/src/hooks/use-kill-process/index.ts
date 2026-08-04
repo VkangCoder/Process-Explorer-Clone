@@ -59,7 +59,7 @@ export const useKillProcess = () => {
       if (failed.length === 0) {
         message.success(
           succeeded.length === 1
-            ? `Killed ${succeeded[0].target.name} (${succeeded[0].target.pid})`
+            ? `Killed ${succeeded[0].target.name} `
             : `Killed ${succeeded.length} processes`,
         );
         return;

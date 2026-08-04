@@ -11,11 +11,6 @@ import { Toolbar } from "../toolbar";
 import type { AppShellProps } from "./app-shell.types";
 import styles from "./app-shell.module.css";
 
-// Component antd (Button, Menu, Table...) tự cập nhật màu theo token khi đổi theme.
-// Nhưng div thường (như .toolbar, .overviewBar) thì không — CSS var của antd trong
-// chế độ `cssVar` chỉ được đăng ký cục bộ bên trong từng component antd, không đặt
-// lên <html>. Nên ở đây tự đọc token qua useToken() rồi gán làm CSS var lên root
-// div của app, để mọi CSS Module con kế thừa đúng theo theme hiện tại.
 export const AppShell = ({
   processes,
   totalCpu,
@@ -88,7 +83,10 @@ export const AppShell = ({
               />
             </Splitter.Panel>
             <Splitter.Panel defaultSize="25%" min="15%" max="40%">
-              <PropertiesPanel process={selectedProcess} />
+              <PropertiesPanel
+                process={selectedProcess}
+                themeMode={themeMode}
+              />
             </Splitter.Panel>
           </Splitter>
         </Splitter.Panel>

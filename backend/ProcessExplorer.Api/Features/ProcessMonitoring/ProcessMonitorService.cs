@@ -97,8 +97,13 @@ public class ProcessMonitorService : BackgroundService
                 catch (InvalidOperationException) { p.Dispose(); continue; }
                 catch (Win32Exception) { name = $"pid_{pid}"; }
 
+                string? exePath = null;
+                try { exePath = p.MainModule?.FileName; }
+                catch (Win32Exception) { }
+                catch (InvalidOperationException) { }
+
                 list.Add(new ProcInfo(pid, parentPid, name, cpuPercent, memMb,
-                      threadCount, handleCount, diskKbPerSec, startTimeMs));
+                      threadCount, handleCount, diskKbPerSec, startTimeMs, exePath));
                 p.Dispose();
             }
 

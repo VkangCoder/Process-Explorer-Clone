@@ -11,7 +11,6 @@ export interface ProcessTableProps {
   pendingPids: Set<number>;
 }
 
-// Node cho antd Table: process + mảng con lồng bên trong (Table tự vẽ expand/collapse).
 export interface ProcessTreeNode extends ProcInfo {
   key: number;
   children?: ProcessTreeNode[];

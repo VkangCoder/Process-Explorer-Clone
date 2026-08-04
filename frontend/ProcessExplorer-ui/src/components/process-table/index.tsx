@@ -7,11 +7,12 @@ import {
   type TableColumnsType,
 } from "antd";
 import { useMemo, useState } from "react";
-import { OctagonX } from "lucide-react";
+import { AppWindow, OctagonX } from "lucide-react";
 import { getCpuColor } from "./process-table.helpers";
 import styles from "./process-table.module.css";
 import { buildTree } from "./process-table.tree";
 import type { ProcessTableProps, ProcessTreeNode } from "./process-table.types";
+import { getIconUrl } from "../../api/getIcon";
 
 const { Text } = Typography;
 
@@ -24,6 +25,26 @@ const items: MenuProps["items"] = [
   { label: "Suspend", key: "suspend" },
 ];
 
+const ProcessIcon = ({ executablePath }: { executablePath: string | null }) => {
+  const [failed, setFailed] = useState(false);
+  const iconUrl = getIconUrl(executablePath);
+
+  if (!iconUrl || failed) {
+    return <AppWindow size={14} className={styles.iconFallback} />;
+  }
+
+  return (
+    <img
+      src={iconUrl}
+      width={16}
+      height={16}
+      alt=""
+      className={styles.icon}
+      onError={() => setFailed(true)}
+    />
+  );
+};
+
 const columns: TableColumnsType<ProcessTreeNode> = [
   {
     title: "Process Name",
@@ -31,6 +52,12 @@ const columns: TableColumnsType<ProcessTreeNode> = [
     key: "name",
     sorter: (a, b) => a.name.localeCompare(b.name),
     ellipsis: true,
+    render: (name: string, record: ProcessTreeNode) => (
+      <span className={styles.nameCell}>
+        <ProcessIcon executablePath={record.executablePath} />
+        {name}
+      </span>
+    ),
   },
   {
     title: "PID",

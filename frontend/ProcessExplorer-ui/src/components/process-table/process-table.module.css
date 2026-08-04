@@ -18,3 +18,18 @@
 .selectedRow td {
   background: color-mix(in srgb, var(--ant-color-primary) 16%, transparent) !important;
 }
+
+.nameCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.iconFallback {
+  flex-shrink: 0;
+  color: var(--ant-color-text-secondary);
+}

@@ -8,4 +8,5 @@ export interface ProcInfo {
   handleCount: number;
   diskKbPerSec: number
   startTimeUnixMs: number
+  executablePath: string | null
 }

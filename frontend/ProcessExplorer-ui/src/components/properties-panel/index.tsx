@@ -11,7 +11,7 @@ const NotAvailable = () => (
   />
 );
 
-export const PropertiesPanel = ({ process }: PropertiesPanelProps) => {
+export const PropertiesPanel = ({ process, themeMode }: PropertiesPanelProps) => {
   const items: TabsProps["items"] = [
     {
       key: "properties",
@@ -49,7 +49,7 @@ export const PropertiesPanel = ({ process }: PropertiesPanelProps) => {
         />
       ),
     },
-    { key: "performance", label: "Performance", children: <PerformanceTab process={process} key={process?.pid} /> },
+    { key: "performance", label: "Performance", children: <PerformanceTab process={process} themeMode={themeMode} key={process?.pid} /> },
     { key: "services", label: "Services", children: <NotAvailable /> },
     { key: "modules", label: "Modules", children: <NotAvailable /> },
   ];
