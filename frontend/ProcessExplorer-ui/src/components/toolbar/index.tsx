@@ -6,6 +6,7 @@ import {
   Filter,
   Info,
   ListTree,
+  LogOut,
   MemoryStick,
   Moon,
   OctagonX,
@@ -26,7 +27,13 @@ interface ToolButtonProps {
   disabled?: boolean;
 }
 
-const ToolButton = ({ label, icon, onClick, active, disabled }: ToolButtonProps) => (
+const ToolButton = ({
+  label,
+  icon,
+  onClick,
+  active,
+  disabled,
+}: ToolButtonProps) => (
   <Tooltip title={label}>
     <Button
       type={active ? "primary" : "text"}
@@ -42,6 +49,7 @@ export const Toolbar = ({
   onToggleTheme,
   selectedCount,
   onKillSelected,
+  onLogout,
 }: ToolbarProps) => {
   return (
     <div className={styles.toolbar}>
@@ -51,7 +59,9 @@ export const Toolbar = ({
         <Divider vertical />
         <ToolButton
           label={
-            selectedCount > 0 ? `Kill Process (${selectedCount})` : "Kill Process"
+            selectedCount > 0
+              ? `Kill Process (${selectedCount})`
+              : "Kill Process"
           }
           icon={<OctagonX size={16} />}
           disabled={selectedCount === 0}
@@ -71,17 +81,25 @@ export const Toolbar = ({
         <ToolButton label="Memory History" icon={<MemoryStick size={16} />} />
       </Space>
 
-      <Tooltip
-        title={
-          themeMode === "dark" ? "Switch to Light Theme" : "Switch to Dark Theme"
-        }
-      >
-        <Button
-          type="text"
-          icon={themeMode === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-          onClick={onToggleTheme}
-        />
-      </Tooltip>
+      <div>
+        <Tooltip
+          title={
+            themeMode === "dark"
+              ? "Switch to Light Theme"
+              : "Switch to Dark Theme"
+          }
+        >
+          <Button
+            type="text"
+            icon={themeMode === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            onClick={onToggleTheme}
+          />
+        </Tooltip>
+
+        <Tooltip title="Log out">
+          <Button type="text" icon={<LogOut size={16} />} onClick={onLogout} />
+        </Tooltip>
+      </div>
     </div>
   );
 };

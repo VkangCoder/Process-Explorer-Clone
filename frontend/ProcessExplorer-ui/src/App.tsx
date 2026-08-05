@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { ConfigProvider, App as AntdApp, } from "antd";
-import { AppShell } from "./components";
+import { ConfigProvider, App as AntdApp } from "antd";
+import { AppShell, LoginPage } from "./components";
+import { useAuth } from "./hooks/use-auth";
 import { useProcessData } from "./hooks/use-process-data";
 import { useTheme } from "./hooks/use-theme";
 import { darkTheme, lightTheme } from "./theme";
@@ -8,6 +9,7 @@ import { darkTheme, lightTheme } from "./theme";
 function App() {
   const processes = useProcessData();
   const { mode, toggleTheme } = useTheme();
+  const { token, isAuthenticated, login, logout, error, isLoggingIn } = useAuth();
   const [selectedPid, setSelectedPid] = useState<number>();
 
   const selectedProcess = useMemo(
@@ -34,19 +36,25 @@ function App() {
   return (
     <ConfigProvider theme={mode === "dark" ? darkTheme : lightTheme}>
       <AntdApp>
-        <AppShell
-          processes={processes}
-          totalCpu={totalCpu}
-          selectedPid={selectedPid}
-          totalMemory={totalMemory}
-          totalThreads={totalThreads}
-          totalHandles={totalHandles}
-          totalDisk={totalDisk}
-          selectedProcess={selectedProcess}
-          themeMode={mode}
-          onToggleTheme={toggleTheme}
-          onSelectPid={setSelectedPid}
-        />
+        {isAuthenticated ? (
+          <AppShell
+            processes={processes}
+            totalCpu={totalCpu}
+            selectedPid={selectedPid}
+            totalMemory={totalMemory}
+            totalThreads={totalThreads}
+            totalHandles={totalHandles}
+            totalDisk={totalDisk}
+            selectedProcess={selectedProcess}
+            themeMode={mode}
+            onToggleTheme={toggleTheme}
+            onSelectPid={setSelectedPid}
+            token={token}
+            onLogout={logout}
+          />
+        ) : (
+          <LoginPage onLogin={login} error={error} isLoggingIn={isLoggingIn} />
+        )}
       </AntdApp>
     </ConfigProvider>
   );

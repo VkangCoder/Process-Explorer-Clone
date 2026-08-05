@@ -1,4 +1,5 @@
 export { AppShell } from "./app-shell";
+export { LoginPage } from "./login-page";
 export { MenuBar } from "./menu-bar";
 export { Toolbar } from "./toolbar";
 export { OverviewBar } from "./overview-bar";

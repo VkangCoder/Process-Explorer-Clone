@@ -8,7 +8,7 @@ export interface KillTarget {
   name: string;
 }
 
-export const useKillProcess = () => {
+export const useKillProcess = (token: string | null) => {
   const [pendingPids, setPendingPids] = useState<Set<number>>(new Set());
 
   const killProcesses = useCallback(
@@ -42,7 +42,7 @@ export const useKillProcess = () => {
       const results = await Promise.all(
         killable.map(async (target) => ({
           target,
-          result: await killProcess(target.pid, target.startTimeUnixMs),
+          result: await killProcess(target.pid, target.startTimeUnixMs, token),
         })),
       );
 
@@ -77,7 +77,7 @@ export const useKillProcess = () => {
           : `Failed to kill ${failed.length} processes`,
       );
     },
-    [pendingPids],
+    [pendingPids, token],
   );
 
   return { killProcesses, pendingPids };

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Splitter, theme } from "antd";
+import { Splitter } from "antd";
 import { useKillProcess } from "../../hooks/use-kill-process";
+import { useThemeCssVars } from "../../hooks/use-theme-css-vars";
 import { BottomPanel } from "../bottom-panel";
 import { MenuBar } from "../menu-bar";
 import { OverviewBar } from "../overview-bar";
@@ -23,10 +24,12 @@ export const AppShell = ({
   themeMode,
   onToggleTheme,
   onSelectPid,
+  token,
+  onLogout,
 }: AppShellProps) => {
-  const { token } = theme.useToken();
+  const cssVars = useThemeCssVars();
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
-  const { killProcesses, pendingPids } = useKillProcess();
+  const { killProcesses, pendingPids } = useKillProcess(token);
 
   const selectedTargets = useMemo(
     () =>
@@ -40,16 +43,6 @@ export const AppShell = ({
     [processes, selectedRowKeys],
   );
 
-  const cssVars = {
-    "--ant-color-bg-base": token.colorBgBase,
-    "--ant-color-bg-container": token.colorBgContainer,
-    "--ant-color-bg-elevated": token.colorBgElevated,
-    "--ant-color-text": token.colorText,
-    "--ant-color-text-secondary": token.colorTextSecondary,
-    "--ant-color-border": token.colorBorder,
-    "--ant-color-primary": token.colorPrimary,
-  } as React.CSSProperties;
-
   return (
     <div className={styles.appShell} style={cssVars}>
       <MenuBar />
@@ -58,6 +51,7 @@ export const AppShell = ({
         onToggleTheme={onToggleTheme}
         selectedCount={selectedRowKeys.length}
         onKillSelected={() => void killProcesses(selectedTargets)}
+        onLogout={onLogout}
       />
       <OverviewBar
         processCount={processes.length}

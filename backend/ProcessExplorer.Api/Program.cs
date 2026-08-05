@@ -15,6 +15,7 @@ var keyBytes = Encoding.UTF8.GetBytes(jwtConfig.SecretKey);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -40,6 +41,7 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     var connectionString = builder.Configuration["Mongo:ConnectionString"];
     return new MongoClient(connectionString);
 });
+builder.Services.AddSingleton<JwtTokenService>();
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -58,7 +60,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddHostedService<ProcessMonitorService>();
 builder.Services.AddSingleton<ProcessSampleRepository>();
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
@@ -69,11 +70,28 @@ builder.Services.AddSwaggerGen(options =>
         Title = "Process Explorer",
         Version = "v1",
     });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter the token (no need to type 'Bearer '), e.g., eyJhbGc...",
+    });
+
+    options.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecuritySchemeReference("Bearer", null),
+            new List<string>()
+        }
+    });
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -82,19 +100,14 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Process Explorer V1");
     });
 }
+
 app.UseCors(MyAllowSpecificOrigins);
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/", () => "Process monitor is running");
-
 app.MapHub<ProcessHub>("/hubs/process");
-
-// app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

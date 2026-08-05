@@ -19,6 +19,7 @@ function isApiErrorBody(value: unknown): value is ApiErrorBody {
 export async function killProcess(
     pid: number,
     startTimeUnixMs: number,
+    token: string | null,
     signal?: AbortSignal,
 ): Promise<KillResult> {
     let res: Response;
@@ -27,7 +28,10 @@ export async function killProcess(
             `${import.meta.env.VITE_URL}/${pid}/kill`,
             {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
                 body: JSON.stringify({ startTimeUnixMs }),
                 signal,
             },
@@ -43,6 +47,10 @@ export async function killProcess(
 
     if (res.status === 204) {
         return { ok: true };
+    }
+
+    if (res.status === 401) {
+        return { ok: false, status: 401, message: "Session expired, please login again" };
     }
 
     let body: unknown = null;

@@ -1,10 +1,12 @@
 namespace ProcessExplorer.Api.Features.ProcessHistory;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProcessExplorer.Api.Persistence;
 
 [ApiController]
 [Route("api/processes")]
+[Authorize]
 public class ProcessHistoryController : ControllerBase
 {
     private readonly ProcessSampleRepository _repository;
@@ -15,11 +17,11 @@ public class ProcessHistoryController : ControllerBase
     }
 
     // GET /api/processes/1080/history?minutes=5
-     [HttpGet("{pid:int}/history")]
+    [HttpGet("{pid:int}/history")]
     public async Task<IActionResult> GetHistory(
-        int pid,
-        [FromQuery] int seconds = 60,
-        CancellationToken ct = default)
+       int pid,
+       [FromQuery] int seconds = 60,
+       CancellationToken ct = default)
     {
         var samples = await _repository.GetHistoryAsync(pid, seconds, ct);
 

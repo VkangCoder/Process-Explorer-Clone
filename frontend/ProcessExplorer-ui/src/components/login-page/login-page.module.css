@@ -1,0 +1,28 @@
+.loginPage {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ant-color-bg-base);
+}
+
+.card {
+  width: 360px;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 24px;
+  color: var(--ant-color-text);
+}
+
+.alert {
+  margin-bottom: 16px;
+}
+
+.submitItem {
+  margin-bottom: 0;
+}

@@ -5,4 +5,5 @@ export interface ToolbarProps {
   onToggleTheme: () => void;
   selectedCount: number;
   onKillSelected: () => void;
+  onLogout: () => void;
 }

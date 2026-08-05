@@ -3,6 +3,7 @@ namespace ProcessExplorer.Api.Features.ProcessActions;
 using System.Collections.Concurrent;
 using System.Drawing;
 using System.Drawing.Imaging;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -12,6 +13,7 @@ public class ProcessActionsController : ControllerBase
     private static readonly ConcurrentDictionary<string, byte[]> _iconCache = new();
 
     [HttpPost("{pid:int}/kill")]
+    [Authorize]
     public IActionResult Kill(int pid, [FromBody] KillRequest request)
     {
         KillResult result = ProcessKiller.Kill(pid, request.StartTimeUnixMs);
