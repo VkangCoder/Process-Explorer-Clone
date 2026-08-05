@@ -1,9 +1,37 @@
+using System.Text;
 using Microsoft.OpenApi;
 using MongoDB.Driver;
+using ProcessExplorer.Api.Auth;
 using ProcessExplorer.Api.Features.ProcessMonitoring;
 using ProcessExplorer.Api.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+var jwtConfig = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()!;
+var keyBytes = Encoding.UTF8.GetBytes(jwtConfig.SecretKey);
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtConfig.Issuer,
+
+            ValidateAudience = true,
+            ValidAudience = jwtConfig.Audience,
+
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+
+            ClockSkew = TimeSpan.Zero,
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services.Configure<MongoOptions>(builder.Configuration.GetSection("Mongo"));
 
@@ -45,20 +73,6 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var client = scope.ServiceProvider.GetRequiredService<IMongoClient>();
-    try
-    {
-        var dbs = client.ListDatabaseNames().ToList();
-        Console.WriteLine($"[Mongo] Kết nối OK. Databases: {string.Join(", ", dbs)}");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"[Mongo] KẾT NỐI THẤT BẠI: {ex.Message}");
-    }
-}
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -69,6 +83,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 app.UseCors(MyAllowSpecificOrigins);
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/", () => "Process monitor is running");
 
