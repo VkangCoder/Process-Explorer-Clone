@@ -4,6 +4,7 @@ import { type ProcInfo } from "../../types/ProcInfo";
 
 export const useProcessData = () => {
   const [processes, setProcesses] = useState<ProcInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
@@ -13,6 +14,7 @@ export const useProcessData = () => {
 
     connection.on("snapshot", (list: ProcInfo[]) => {
       setProcesses(list);
+      setIsLoading(false);
     });
 
     connection
@@ -25,5 +27,5 @@ export const useProcessData = () => {
     };
   }, []);
 
-  return processes;
+  return { processes, isLoading };
 };

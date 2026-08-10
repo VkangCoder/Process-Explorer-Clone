@@ -29,7 +29,7 @@ export const AppShell = ({
 }: AppShellProps) => {
   const cssVars = useThemeCssVars();
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
-  const { killProcesses, pendingPids } = useKillProcess(token);
+  const { killProcesses, pendingPids } = useKillProcess(token, onLogout);
 
   const selectedTargets = useMemo(
     () =>
@@ -51,7 +51,7 @@ export const AppShell = ({
         onToggleTheme={onToggleTheme}
         selectedCount={selectedRowKeys.length}
         onKillSelected={() => void killProcesses(selectedTargets)}
-        onLogout={onLogout}
+        onLogout={() => onLogout()}
       />
       <OverviewBar
         processCount={processes.length}

@@ -8,7 +8,10 @@ export interface KillTarget {
   name: string;
 }
 
-export const useKillProcess = (token: string | null) => {
+export const useKillProcess = (
+  token: string | null,
+  onUnauthorized: (reason: string) => void,
+) => {
   const [pendingPids, setPendingPids] = useState<Set<number>>(new Set());
 
   const killProcesses = useCallback(
@@ -56,6 +59,14 @@ export const useKillProcess = (token: string | null) => {
       const succeeded = results.filter((r) => r.result.ok);
       const failed = results.filter((r) => !r.result.ok);
 
+      const unauthorized = failed.some(
+        (r) => !r.result.ok && r.result.status === 401,
+      );
+      if (unauthorized) {
+        onUnauthorized("Your session has expired. Please sign in again.");
+        return;
+      }
+
       if (failed.length === 0) {
         message.success(
           succeeded.length === 1
@@ -77,7 +88,7 @@ export const useKillProcess = (token: string | null) => {
           : `Failed to kill ${failed.length} processes`,
       );
     },
-    [pendingPids, token],
+    [pendingPids, token, onUnauthorized],
   );
 
   return { killProcesses, pendingPids };

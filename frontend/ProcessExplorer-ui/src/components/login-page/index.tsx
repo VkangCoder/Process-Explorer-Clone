@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Form, Input, Typography } from "antd";
+import { Button, Card, Form, Input, Typography } from "antd";
 import { LockKeyhole } from "lucide-react";
 import { useThemeCssVars } from "../../hooks/use-theme-css-vars";
 import type { LoginPageProps } from "./login-page.types";
@@ -11,7 +11,7 @@ interface LoginFormValues {
   password: string;
 }
 
-export const LoginPage = ({ onLogin, error, isLoggingIn }: LoginPageProps) => {
+export const LoginPage = ({ onLogin, isLoggingIn }: LoginPageProps) => {
   const cssVars = useThemeCssVars();
 
   const handleFinish = (values: LoginFormValues) => {
@@ -28,15 +28,6 @@ export const LoginPage = ({ onLogin, error, isLoggingIn }: LoginPageProps) => {
           </Title>
           <Text type="secondary">Sign in to continue</Text>
         </div>
-
-        {error && (
-          <Alert
-            type="error"
-            message={error}
-            showIcon
-            className={styles.alert}
-          />
-        )}
 
         <Form<LoginFormValues>
           layout="vertical"

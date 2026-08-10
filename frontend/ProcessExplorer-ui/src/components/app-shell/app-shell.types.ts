@@ -14,5 +14,5 @@ export interface AppShellProps {
   onToggleTheme: () => void;
   onSelectPid: (pid: number) => void;
   token: string | null;
-  onLogout: () => void;
+  onLogout: (reason?: string) => void;
 }
