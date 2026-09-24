@@ -1,16 +1,19 @@
 import { useMemo, useState } from "react";
-import { ConfigProvider, App as AntdApp } from "antd";
+import { ConfigProvider, App as AntdApp, message } from "antd";
 import { Navigate, Route, Routes } from "react-router";
-import { AppShell, LoadingScreen, LoginPage } from "./components";
-import { useAuth } from "./hooks/use-auth";
+import { AppShell, LoginPage } from "./components";
 import { useProcessData } from "./hooks/use-process-data";
 import { useTheme } from "./hooks/use-theme";
 import { darkTheme, lightTheme } from "./theme";
+import { useAppDispatch, useAppSelector } from "./stores";
+import { logout } from "./stores/auth-slice";
 
 function App() {
-  const { processes, isLoading } = useProcessData();
+  const dispatch = useAppDispatch();
+  const token = useAppSelector((s) => s.auth.token);
+  const isAuthenticated = token !== null;
+  const processes = useProcessData();
   const { mode, toggleTheme } = useTheme();
-  const { token, isAuthenticated, login, logout, isLoggingIn } = useAuth();
   const [selectedPid, setSelectedPid] = useState<number>();
 
   const selectedProcess = useMemo(
@@ -28,11 +31,20 @@ function App() {
     [processes],
   );
 
-  const totalThreads = useMemo(() => processes.reduce((s, p) => s + p.threadCount, 0), [processes]);
+  const totalThreads = useMemo(
+    () => processes.reduce((s, p) => s + p.threadCount, 0),
+    [processes],
+  );
 
-  const totalHandles = useMemo(() => processes.reduce((s, p) => s + p.handleCount, 0), [processes]);
+  const totalHandles = useMemo(
+    () => processes.reduce((s, p) => s + p.handleCount, 0),
+    [processes],
+  );
 
-  const totalDisk = useMemo(() => processes.reduce((s, p) => s + p.diskKbPerSec, 0), [processes]);
+  const totalDisk = useMemo(
+    () => processes.reduce((s, p) => s + p.diskKbPerSec, 0),
+    [processes],
+  );
 
   return (
     <ConfigProvider theme={mode === "dark" ? darkTheme : lightTheme}>
@@ -41,11 +53,7 @@ function App() {
           <Route
             path="/login"
             element={
-              isAuthenticated ? (
-                <Navigate to="/" replace />
-              ) : (
-                <LoginPage onLogin={login} isLoggingIn={isLoggingIn} />
-              )
+              isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />
             }
           />
           <Route
@@ -53,8 +61,6 @@ function App() {
             element={
               !isAuthenticated ? (
                 <Navigate to="/login" replace />
-              ) : isLoading ? (
-                <LoadingScreen />
               ) : (
                 <AppShell
                   processes={processes}
@@ -69,7 +75,10 @@ function App() {
                   onToggleTheme={toggleTheme}
                   onSelectPid={setSelectedPid}
                   token={token}
-                  onLogout={logout}
+                  onLogout={(reason) => {
+                    if (reason) message.error(reason);
+                    dispatch(logout());
+                  }}
                 />
               )
             }

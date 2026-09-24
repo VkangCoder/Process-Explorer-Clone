@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Splitter } from "antd";
 import { useKillProcess } from "../../hooks/use-kill-process";
 import { useThemeCssVars } from "../../hooks/use-theme-css-vars";
@@ -30,6 +30,11 @@ export const AppShell = ({
   const cssVars = useThemeCssVars();
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
   const { killProcesses, pendingPids } = useKillProcess(token, onLogout);
+
+  useEffect(() => {
+    const livePids = new Set(processes.map((p) => p.pid));
+    setSelectedRowKeys((prev) => prev.filter((pid) => livePids.has(pid)));
+  }, [processes]);
 
   const selectedTargets = useMemo(
     () =>

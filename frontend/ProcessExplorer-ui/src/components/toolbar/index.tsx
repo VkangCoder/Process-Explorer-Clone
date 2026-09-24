@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import type { ToolbarProps } from "./toolbar.types";
 import styles from "./toolbar.module.css";
+import { store } from "../../stores";
+import { logout } from "../../stores/auth-slice";
 
 interface ToolButtonProps {
   label: string;
@@ -49,7 +51,6 @@ export const Toolbar = ({
   onToggleTheme,
   selectedCount,
   onKillSelected,
-  onLogout,
 }: ToolbarProps) => {
   return (
     <div className={styles.toolbar}>
@@ -97,7 +98,11 @@ export const Toolbar = ({
         </Tooltip>
 
         <Tooltip title="Log out">
-          <Button type="text" icon={<LogOut size={16} />} onClick={onLogout} />
+          <Button
+            type="text"
+            icon={<LogOut size={16} />}
+            onClick={() => store.dispatch(logout())}
+          />
         </Tooltip>
       </div>
     </div>

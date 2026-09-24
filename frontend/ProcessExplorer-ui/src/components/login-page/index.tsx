@@ -1,8 +1,9 @@
 import { Button, Card, Form, Input, Typography } from "antd";
 import { LockKeyhole } from "lucide-react";
 import { useThemeCssVars } from "../../hooks/use-theme-css-vars";
-import type { LoginPageProps } from "./login-page.types";
 import styles from "./login-page.module.css";
+import { useAppDispatch, useAppSelector } from "../../stores";
+import { login } from "../../stores/auth-slice";
 
 const { Title, Text } = Typography;
 
@@ -11,11 +12,13 @@ interface LoginFormValues {
   password: string;
 }
 
-export const LoginPage = ({ onLogin, isLoggingIn }: LoginPageProps) => {
+export const LoginPage = () => {
+  const dispatch = useAppDispatch();
+  const isLoggingIn = useAppSelector((s) => s.auth.isLoggingIn);
   const cssVars = useThemeCssVars();
 
   const handleFinish = (values: LoginFormValues) => {
-    void onLogin(values.username, values.password);
+    dispatch(login({ username: values.username, password: values.password }));
   };
 
   return (
@@ -49,7 +52,12 @@ export const LoginPage = ({ onLogin, isLoggingIn }: LoginPageProps) => {
             <Input.Password />
           </Form.Item>
           <Form.Item className={styles.submitItem}>
-            <Button type="primary" htmlType="submit" block loading={isLoggingIn}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              loading={isLoggingIn}
+            >
               Sign in
             </Button>
           </Form.Item>
