@@ -4,6 +4,27 @@
   background: var(--ant-color-bg-container);
 }
 
+.cpuHeader {
+  background: #e1f2e1 !important;
+}
+.cpuCell {
+  background: #f0f9f0 !important;
+}
+
+.privateHeader {
+  background: #fff3c4 !important;
+}
+.privateCell {
+  background: #fffbea !important;
+}
+
+.workingHeader {
+  background: #ffe0d1 !important;
+}
+.workingCell {
+  background: #fff1ea !important;
+}
+
 .mono {
   font-family: "Cascadia Code", "Consolas", monospace;
   font-size: 12px;
