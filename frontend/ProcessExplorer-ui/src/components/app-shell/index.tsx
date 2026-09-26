@@ -14,6 +14,7 @@ import styles from "./app-shell.module.css";
 
 export const AppShell = ({
     processes,
+    highlights,
     totalCpu,
     totalMemory,
     totalDisk,
@@ -73,6 +74,7 @@ export const AppShell = ({
                         <Splitter.Panel defaultSize="75%" min="40%">
                             <ProcessTable
                                 processes={processes}
+                                highlights={highlights}
                                 selectedPid={selectedPid}
                                 onSelectPid={onSelectPid}
                                 selectedRowKeys={selectedRowKeys}

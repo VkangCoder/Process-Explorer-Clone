@@ -12,7 +12,7 @@ function App() {
     const dispatch = useAppDispatch();
     const token = useAppSelector((s) => s.auth.token);
     const isAuthenticated = token !== null;
-    const processes = useProcessData();
+    const { processes, highlights } = useProcessData();
     const { mode, toggleTheme } = useTheme();
     const [selectedPid, setSelectedPid] = useState<number>();
 
@@ -42,6 +42,7 @@ function App() {
                             ) : (
                                 <AppShell
                                     processes={processes}
+                                    highlights={highlights}
                                     totalCpu={totalCpu}
                                     selectedPid={selectedPid}
                                     totalMemory={totalMemory}

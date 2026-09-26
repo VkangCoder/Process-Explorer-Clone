@@ -10,4 +10,10 @@ export interface ProcInfo {
     diskKbPerSec: number;
     startTimeUnixMs: number;
     executablePath: string | null;
+    isService: boolean;
+    isDotNet: boolean;
+    isSuspended: boolean;
+    isOwnProcess: boolean;
+    isPacked: boolean;
+    userName: string | null;
 }

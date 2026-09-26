@@ -1,15 +1,29 @@
 import type { ProcInfo } from "../../types/ProcInfo";
 import type { ProcessTreeNode } from "./process-table.types";
 
-export const buildTree = (list: ProcInfo[]): ProcessTreeNode[] => {
-  const childrenByParent = new Map<number, ProcInfo[]>();
-  for (const p of list) {
-    const arr = childrenByParent.get(p.parentPid) ?? [];
-    arr.push(p);
-    childrenByParent.set(p.parentPid, arr);
-  }
+const isPlausibleParent = (parent: ProcInfo, child: ProcInfo): boolean => {
+  if (parent.pid === child.pid) return false;
+  if (parent.startTimeUnixMs === 0 || child.startTimeUnixMs === 0) return true;
+  return parent.startTimeUnixMs <= child.startTimeUnixMs;
+};
 
-  const allPids = new Set(list.map((p) => p.pid));
+export const buildTree = (list: ProcInfo[]): ProcessTreeNode[] => {
+  const byPid = new Map<number, ProcInfo>();
+  for (const p of list) byPid.set(p.pid, p);
+
+  const childrenByParent = new Map<number, ProcInfo[]>();
+  const roots: ProcInfo[] = [];
+
+  for (const p of list) {
+    const parent = byPid.get(p.parentPid);
+    if (parent && isPlausibleParent(parent, p)) {
+      const arr = childrenByParent.get(p.parentPid) ?? [];
+      arr.push(p);
+      childrenByParent.set(p.parentPid, arr);
+    } else {
+      roots.push(p);
+    }
+  }
 
   const build = (proc: ProcInfo): ProcessTreeNode => {
     const node: ProcessTreeNode = { ...proc, key: proc.pid };
@@ -22,5 +36,5 @@ export const buildTree = (list: ProcInfo[]): ProcessTreeNode[] => {
     return node;
   };
 
-  return list.filter((p) => !allPids.has(p.parentPid)).map(build);
+  return roots.map(build);
 };

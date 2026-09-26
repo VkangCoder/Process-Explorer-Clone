@@ -13,8 +13,13 @@ public class ProcessMonitorService : BackgroundService
 
 
     private readonly Dictionary<int, string?> _exePathCache = new();
+    private readonly Dictionary<int, bool> _isDotNetCache = new();
+    private readonly Dictionary<int, string?> _ownerCache = new();
+    private readonly Dictionary<string, bool> _packedCache = new();
+    private HashSet<int> _servicePids = new();
 
     private readonly int _coreCount = Environment.ProcessorCount;
+    private readonly int _ownProcessId = Environment.ProcessId;
     private long _previousTimestamp = Stopwatch.GetTimestamp();
     private int _tickCount;
 
@@ -38,6 +43,10 @@ public class ProcessMonitorService : BackgroundService
             var currentIo = new Dictionary<int, long>();
             var parentMap = ProcessTreeNative.GetParentMap();
             var list = new List<ProcInfo>();
+
+            // Service membership rarely changes; re-enumerate every 5 ticks instead of every tick.
+            if (_tickCount % 5 == 0)
+                _servicePids = ServiceNative.GetServicePids();
 
             foreach (var p in Process.GetProcesses())
             {
@@ -105,12 +114,51 @@ public class ProcessMonitorService : BackgroundService
 
                 if (!_exePathCache.TryGetValue(pid, out string? exePath))
                 {
-                    exePath = null;
-                    try { exePath = p.MainModule?.FileName; }
-                    catch (Win32Exception) { }
-                    catch (InvalidOperationException) { }
+                    exePath = ProcessPathNative.GetImagePath(pid);
+                    if (exePath == null)
+                    {
+                        try { exePath = p.MainModule?.FileName; }
+                        catch (Win32Exception) { }
+                        catch (InvalidOperationException) { }
+                    }
                     _exePathCache[pid] = exePath;
                 }
+
+                // Process.ProcessName has no extension (e.g. "svchost"). Prefer the real file
+                // name from the resolved exe path so it matches what Process Explorer shows
+                // ("svchost.exe"); protected processes without a resolvable path keep the bare name.
+                if (!string.IsNullOrEmpty(exePath))
+                {
+                    string fileName = Path.GetFileName(exePath);
+                    if (!string.IsNullOrEmpty(fileName))
+                        name = fileName;
+                }
+
+                if (!_isDotNetCache.TryGetValue(pid, out bool isDotNet))
+                {
+                    isDotNet = DetectIsDotNet(p);
+                    _isDotNetCache[pid] = isDotNet;
+                }
+
+                if (!_ownerCache.TryGetValue(pid, out string? userName))
+                {
+                    userName = ProcessOwnerNative.GetOwner(pid);
+                    _ownerCache[pid] = userName;
+                }
+
+                bool isPacked = false;
+                if (!string.IsNullOrEmpty(exePath))
+                {
+                    if (!_packedCache.TryGetValue(exePath, out isPacked))
+                    {
+                        isPacked = PackerHeuristic.LooksPacked(exePath);
+                        _packedCache[exePath] = isPacked;
+                    }
+                }
+
+                bool isOwnProcess = pid == _ownProcessId;
+                bool isSuspended = DetectIsSuspended(p);
+                bool isService = _servicePids.Contains(pid);
 
                 list.Add(new ProcInfo(
                     pid,
@@ -123,7 +171,13 @@ public class ProcessMonitorService : BackgroundService
                     handleCount,
                     diskKbPerSec,
                     startTimeMs,
-                    exePath));
+                    exePath,
+                    isService,
+                    isDotNet,
+                    isSuspended,
+                    isOwnProcess,
+                    isPacked,
+                    userName));
 
                 p.Dispose();
             }
@@ -158,11 +212,59 @@ public class ProcessMonitorService : BackgroundService
             foreach (var cachedPid in _exePathCache.Keys)
                 if (!alivePids.Contains(cachedPid))
                     deadPids.Add(cachedPid);
-            foreach (var dead in deadPids) _exePathCache.Remove(dead);
+            foreach (var dead in deadPids)
+            {
+                _exePathCache.Remove(dead);
+                _isDotNetCache.Remove(dead);
+                _ownerCache.Remove(dead);
+            }
 
             _previousTimestamp = now;
 
             await Task.Delay(1000, stoppingToken);
         }
+    }
+
+    private static bool DetectIsSuspended(Process p)
+    {
+        try
+        {
+            if (p.Threads.Count == 0)
+                return false;
+
+            foreach (ProcessThread thread in p.Threads)
+            {
+                if (thread.ThreadState != System.Diagnostics.ThreadState.Wait ||
+                    thread.WaitReason != ThreadWaitReason.Suspended)
+                    return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or NotSupportedException)
+        {
+            return false;
+        }
+    }
+
+    private static bool DetectIsDotNet(Process p)
+    {
+        try
+        {
+            foreach (ProcessModule module in p.Modules)
+            {
+                string moduleName = module.ModuleName;
+                if (moduleName.Equals("clr.dll", StringComparison.OrdinalIgnoreCase) ||
+                    moduleName.Equals("coreclr.dll", StringComparison.OrdinalIgnoreCase) ||
+                    moduleName.Equals("clrjit.dll", StringComparison.OrdinalIgnoreCase) ||
+                    moduleName.Equals("mscorwks.dll", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+        }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or NotSupportedException)
+        {
+        }
+
+        return false;
     }
 }

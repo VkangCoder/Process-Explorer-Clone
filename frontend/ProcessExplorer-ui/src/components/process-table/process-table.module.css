@@ -37,7 +37,39 @@
 }
 
 .selectedRow td {
-  background: color-mix(in srgb, var(--ant-color-primary) 16%, transparent) !important;
+  background: color-mix(
+    in srgb,
+    var(--ant-color-primary) 16%,
+    transparent
+  ) !important;
+}
+
+.rowNew td:not(.cpuCell):not(.privateCell):not(.workingCell) {
+  background: color-mix(in srgb, #22c55e 20%, transparent) !important;
+}
+
+.rowExiting td:not(.cpuCell):not(.privateCell):not(.workingCell) {
+  background: color-mix(in srgb, #ef4444 20%, transparent) !important;
+}
+
+.rowSuspended td:not(.cpuCell):not(.privateCell):not(.workingCell) {
+  background: color-mix(in srgb, #9ca3af 22%, transparent) !important;
+}
+
+.rowOwn td:not(.cpuCell):not(.privateCell):not(.workingCell) {
+  background: color-mix(in srgb, #3b82f6 16%, transparent) !important;
+}
+
+.rowPacked td:not(.cpuCell):not(.privateCell):not(.workingCell) {
+  background: color-mix(in srgb, #8b5cf6 18%, transparent) !important;
+}
+
+.rowService td:not(.cpuCell):not(.privateCell):not(.workingCell) {
+  background: color-mix(in srgb, #ec4899 16%, transparent) !important;
+}
+
+.rowDotnet td:not(.cpuCell):not(.privateCell):not(.workingCell) {
+  background: color-mix(in srgb, #eab308 20%, transparent) !important;
 }
 
 .nameCell {

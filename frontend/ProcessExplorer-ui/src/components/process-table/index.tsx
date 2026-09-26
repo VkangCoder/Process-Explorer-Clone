@@ -2,7 +2,7 @@ import { Dropdown, message, Table, Typography, type MenuProps, type TableColumns
 import { AppWindow, OctagonX } from "lucide-react";
 import { useMemo, useState } from "react";
 import { getIconUrl } from "../../api/getIcon";
-import { getCpuColor } from "./process-table.helpers";
+import { getCpuColor, getRowCategory, type RowCategory } from "./process-table.helpers";
 import styles from "./process-table.module.css";
 import { buildTree } from "./process-table.tree";
 import type { ProcessTableProps, ProcessTreeNode } from "./process-table.types";
@@ -106,6 +106,16 @@ const columns: TableColumnsType<ProcessTreeNode> = [
     },
 ];
 
+const categoryClassMap: Record<RowCategory, string> = {
+    exiting: styles.rowExiting,
+    new: styles.rowNew,
+    suspended: styles.rowSuspended,
+    own: styles.rowOwn,
+    packed: styles.rowPacked,
+    service: styles.rowService,
+    dotnet: styles.rowDotnet,
+};
+
 export const ProcessTable = ({
     processes,
     selectedPid,
@@ -114,6 +124,7 @@ export const ProcessTable = ({
     onSelectedRowKeysChange,
     killProcesses,
     pendingPids,
+    highlights,
 }: ProcessTableProps) => {
     const treeData = useMemo(() => buildTree(processes), [processes]);
     const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
@@ -171,7 +182,11 @@ export const ProcessTable = ({
                                 disabled: record.startTimeUnixMs === 0 || pendingPids.has(record.pid),
                             }),
                         }}
-                        rowClassName={(record) => (record.pid === selectedPid ? styles.selectedRow : "")}
+                        rowClassName={(record) => {
+                            if (record.pid === selectedPid) return styles.selectedRow;
+                            const category = getRowCategory(record, highlights?.get(record.pid));
+                            return category ? categoryClassMap[category] : "";
+                        }}
                         onRow={(record) => ({
                             onClick: () => onSelectPid?.(record.pid),
                             onContextMenu: () => {

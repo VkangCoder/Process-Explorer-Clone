@@ -12,5 +12,12 @@ public record ProcInfo
     int HandleCount,
     double DiskKbPerSec,
     long StartTimeUnixMs,
-    string? ExecutablePath
+    string? ExecutablePath,
+
+    bool IsService,        // hồng
+    bool IsDotNet,         // vàng
+    bool IsSuspended,      // xám
+    bool IsOwnProcess,     // xanh dương
+    bool IsPacked,         // tím
+    string? UserName
 );
